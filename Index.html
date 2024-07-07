@@ -433,6 +433,7 @@
         let areaData = "M0,200";
         let cashedOut = false;
         let cashoutMultiplier = 0;
+        let username;
         const canvas = document.getElementById('chartCanvas');
         const canvasWidth = canvas.width;
         const ctx = canvas.getContext('2d');
@@ -449,9 +450,8 @@
             updateServerBalance();
         }
 
-        function updateServerBalance() {
-            google.script.run.updateBalance(username, balance);
-        }
+
+
 
 
 
@@ -515,24 +515,23 @@
             if (isNaN(betAmount) || betAmount == 0) {
                 showAlertInfo('請輸入下注金額');
                 return;
-            }
-            else if (betAmount < 0) {
+            } else if (betAmount < 0) {
                 showAlertInfo('不要鬧');
                 return;
-            }
-
-            else if (betAmount > balance) {
+            } else if (betAmount > balance) {
                 showAlertInfo('餘額不足');
                 return;
+            } else {
+                document.getElementById('multiplier').style.color = '#333';
             }
-
-            else {document.getElementById('multiplier').style.color = '#333';}
             balance -= betAmount;
             gameRunning = true;
             cashedOut = false;
             startGame();
             updateBalance();
+            updateServerBalance();
         }
+
 
         function startGame() {
             if (interval) {
@@ -590,17 +589,18 @@
         
         function cashOut() {
             if (gameRunning && !cashedOut) {
+                showCashoutInfo();
                 balance += betAmount * multiplier;
                 gameRunning = false;
                 cashedOut = true;
                 cashoutMultiplier = multiplier;
                 updateBalance();
+                updateServerBalance();
                 document.getElementById('multiplier').classList.remove('crashed');
                 document.getElementById('multiplier').style.color = '#333';
-                showCashoutInfo();
-                updateServerBalance();  // 這裡也需要更新伺服器上的餘額
             }
         }
+
 
 
         function setBetPercentage(percentage) {
@@ -619,7 +619,7 @@
             const chart = document.getElementById('chart');
             const cashoutInfo = document.createElement('div');
             cashoutInfo.className = 'cashout-info';
-            cashoutInfo.textContent = `出金於 ${cashoutMultiplier.toFixed(2)}x`;
+            cashoutInfo.textContent = `止盈於 ${cashoutMultiplier.toFixed(2)}x`;
             chart.appendChild(cashoutInfo);
             setTimeout(() => {
                 cashoutInfo.style.opacity = '0';
@@ -628,6 +628,7 @@
                 }, 1000); // 1秒後移除元素
             }, 1000); // 1秒後開始淡出
         }
+
 
         function showAlertInfo(message) {
             const chart = document.getElementById('chart');
@@ -655,27 +656,7 @@
                 }, 500);
             }
         }
-        function register() {
-            const username = document.getElementById('registerUsername').value;
-            const password = document.getElementById('registerPassword').value;
-            fetch(`${scriptUrl}?action=registerUser&username=${username}&password=${password}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage('註冊成功！', 'cashout-info');
-                        const userButton = document.getElementById('userButton');
-                        userButton.style.display = 'block';
-                        userButton.textContent = `${username}`;
-                        document.querySelector('.login-button').style.display = 'none';
-                        document.querySelector('.register-button').style.display = 'none';
-                        balance = data.balance;
-                        updateBalance();
-                        toggleRegister();
-                    } else {
-                        showMessage(data.message, 'alert-info');
-                    }
-                });
-        }
+
 
 
 
@@ -734,14 +715,41 @@
 
 
 
+
+
+
+        function register() {
+            const registerUsername = document.getElementById('registerUsername').value;
+            const registerPassword = document.getElementById('registerPassword').value;
+            fetch(`${scriptUrl}?action=registerUser&username=${registerUsername}&password=${registerPassword}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('註冊成功！', 'cashout-info');
+                        username = registerUsername;  // 這裡賦值
+                        const userButton = document.getElementById('userButton');
+                        userButton.style.display = 'block';
+                        userButton.textContent = `${username}`;
+                        document.querySelector('.login-button').style.display = 'none';
+                        document.querySelector('.register-button').style.display = 'none';
+                        balance = data.balance;
+                        updateBalance();
+                        toggleRegister();
+                    } else {
+                        showMessage(data.message, 'alert-info');
+                    }
+                });
+        }
+
         function login() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-            fetch(`${scriptUrl}?action=checkLogin&username=${username}&password=${password}`)
+            const loginUsername = document.getElementById('loginUsername').value;
+            const loginPassword = document.getElementById('loginPassword').value;
+            fetch(`${scriptUrl}?action=checkLogin&username=${loginUsername}&password=${loginPassword}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         balance = data.balance;
+                        username = loginUsername;  // 這裡賦值
                         const userButton = document.getElementById('userButton');
                         userButton.style.display = 'block';
                         userButton.textContent = `${username}`;
@@ -756,8 +764,6 @@
                 });
         }
 
-
-
         function updateServerBalance() {
             fetch(`${scriptUrl}?action=updateBalance&username=${username}&balance=${balance}`)
                 .then(response => response.json())
@@ -770,7 +776,8 @@
 
 
 
-        updateBalance();
+
+
         updateMultiplier();
     </script>
 </body>
