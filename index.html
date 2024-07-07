@@ -728,9 +728,12 @@
 
         function toggleRegister() {
             const registerModal = document.getElementById('registerModal');
+            const loginModal = document.getElementById('loginModal'); // 新增這一行
+
             if (registerModal.style.display === 'none' || registerModal.style.display === '') {
                 registerModal.style.display = 'block';
                 registerModal.style.animation = 'fadeInZoom 0.5s forwards';
+                loginModal.style.display = 'none'; // 新增這一行
             } else {
                 registerModal.style.animation = 'fadeOutZoom 0.5s forwards';
                 setTimeout(() => {
