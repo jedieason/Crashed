@@ -33,62 +33,48 @@
             color: #333;
             margin: 0;
             position: relative;
-            height: 100%; /* 調整高度 */
-            width: 100%; /* 調整寬度 */
+            height: 100%;
+            width: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
-        /* 針對手機 */
-        @media only screen and (max-width: 600px) {
-            .register-button {
-                top: 25px;
-                right: 44px;
-            }
-            .login-button {
-                top: 22px;
-                right: 12px;
-            }
-            .intro-button {
-                top: 25px;
-                right: 90px;
-            }
+        .button-row {
+            display: flex;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            gap: 10px; /* 按鈕之間的間隔 */
+            align-items: center;
         }
 
-        /* 針對平板 */
-        @media only screen and (min-width: 601px) and (max-width: 992px) {
-            .register-button {
-                top: 25px;
-                right: 44px;
-            }
-            .login-button {
-                top: 22px;
-                right: 12px;
-            }
-            .intro-button {
-                top: 25px;
-                right: 90px;
-            }
+        .intro-button,
+        .register-button,
+        .login-button {
+            font-size: 1em;
+            cursor: pointer;
+            background: none;
+            border: none;
+            outline: none;
         }
 
-        /* 針對桌面 */
-        @media only screen and (min-width: 993px) {
-            .register-button {
-                top: 25px;
-                right: 70px;
-            }
-            .login-button {
-                top: 24px;
-                right: 25px;
-            }
-            .intro-button {
-                top: 25px;
-                right: 140px;
-            }
+        .login-button {
+            color: #fff;
+            background: #000;
+            border-radius: 6px;
+            padding: 3px 6px;
         }
 
+        .intro-button, .register-button {
+            color: #aaa;
+        }
+
+        .divider {
+            border-left: 1px solid #aaa; /* 顏色和簡介按鈕一致 */
+            height: 20px; /* 調整高度以適應按鈕 */
+        }
 
         .header {
             position: absolute;
@@ -98,39 +84,9 @@
             color: #333;
         }
 
-        .intro-button {
-            position: absolute;
-            font-size: 1em;
-            color: #aaa;
-            cursor: pointer;
-            background: none;
-            border: none;
-            outline: none;
-        }
-
-        .register-button {
-            position: absolute;
-            font-size: 1em;
-            color: #aaa;
-            cursor: pointer;
-            background: none;
-            border: none;
-            outline: none;
-        }
-
-        .login-button {
-            position: absolute;
-            font-size: 1em;
-            color: #fff;
-            background: #000;
-            border: none;
-            border-radius: 6px;
-            padding: 3px 6px;
-            cursor: pointer;
-            outline: none;
-        }
-
-        .intro-modal {
+        .intro-modal,
+        .register-modal,
+        .login-modal {
             position: fixed;
             top: 29%;
             transform: translate(-50%, -50%);
@@ -147,18 +103,7 @@
 
         .register-modal,
         .login-modal {
-            position: fixed;
             top: 27%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            text-align: left;
-            animation: fadeInZoom 0.5s forwards;
-            z-index: 10;
-            display: none;
         }
 
         #loadingMessage {
@@ -436,10 +381,13 @@
 </head>
 <body>
     <div class="header">𝔑𝔗𝔘𝔐𝔈𝔇 ℭ𝔄𝔐𝔓</div>
-    <button class="register-button" onclick="toggleRegister()">註冊</button>
-    <button class="login-button" onclick="toggleLogin()">登入</button>
-    <button class="intro-button" onclick="toggleIntro()">介紹</button>
-    <button id="userButton" class="intro-button" style="display:none; right: 12px;"></button>
+    <div class="button-row">
+        <button class="intro-button" onclick="toggleIntro()">介紹</button>
+        <div class="divider"></div>
+        <button class="register-button" onclick="toggleRegister()">註冊</button>
+        <button class="login-button" onclick="toggleLogin()">登入</button>
+        <button id="userButton" class="intro-button" style="display:none;"></button>
+    </div>
     <div id="introModal" class="intro-modal center">
         <button class="close-btn" onclick="toggleIntro()">×</button>
         <h2>股市</h2>
