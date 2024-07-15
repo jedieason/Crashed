@@ -485,12 +485,6 @@
              }
          }
 
-
-
-
-
-
-
          function updateMultiplier() {
              document.getElementById('multiplier').textContent = multiplier.toFixed(2) + '×';
          }
@@ -600,7 +594,6 @@
                  document.getElementById('multiplier').style.color = 'red';
                  gameRunning = false;
                  betAmount = 0; // Clear the bet amount since it crashed
-                 change = 0;
              } else {
                  multiplier += 0.01; // 快速乘數增量
                  updateMultiplier();
@@ -631,7 +624,7 @@
                 updating = true;
                 cashoutMultiplier = multiplier;
                 showCashoutInfo();
-                balance += betAmount * cashoutMultiplier;
+                balance += Math.round(betAmount * cashoutMultiplier * 100)/100;
                 change = betAmount * cashoutMultiplier;
                 gameRunning = false;
                 cashedOut = true;
@@ -697,9 +690,6 @@
              }
          }
 
-
-
-
          function showMessage(messageText, className) {
              const existingMessage = document.querySelector('.message');
              if (existingMessage) {
@@ -718,8 +708,6 @@
              }, 1000); // 1秒後開始淡出
          }
 
-
-
          function toggleRegister() {
              const registerModal = document.getElementById('registerModal');
              const loginModal = document.getElementById('loginModal'); // 新增這一行
@@ -736,7 +724,6 @@
              }
          }
 
-
          function toggleLogin() {
              const loginModal = document.getElementById('loginModal');
              const registerModal = document.getElementById('registerModal');
@@ -752,9 +739,6 @@
                  }, 500);
              }
          }
-
-
-
 
         function register() {
             const registerUsername = document.getElementById('registerUsername').value;
