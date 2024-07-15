@@ -555,13 +555,12 @@
              } else {
                  document.getElementById('multiplier').style.color = '#333';
              }
-             balance -= betAmount;
              change = -betAmount;
+             balance += change;
+             updateBalance();
              gameRunning = true;
              cashedOut = false;
              startGame();
-             updateBalance();
-             updateServerBalance();
          }
 
 
@@ -592,6 +591,9 @@
                  document.getElementById('multiplier').classList.add('crashed');
                  document.getElementById('multiplier').textContent = 'Crashed at ' + multiplier.toFixed(2) + 'x';
                  document.getElementById('multiplier').style.color = 'red';
+                 if (gameRunning) {
+                    updateServerBalance();
+                 }
                  gameRunning = false;
                  betAmount = 0; // Clear the bet amount since it crashed
              } else {
@@ -620,19 +622,21 @@
 
 
          function cashOut() {
-            if (gameRunning && !cashedOut) {
+            if (gameRunning && !cashedOut && !updating) {
                 updating = true;
                 cashoutMultiplier = multiplier;
-                showCashoutInfo();
-                balance += Math.round(betAmount * cashoutMultiplier * 100)/100;
-                change = betAmount * cashoutMultiplier;
                 gameRunning = false;
-                cashedOut = true;
+                showLoading();
+                showCashoutInfo();
+                change += Math.round(betAmount * cashoutMultiplier * 100)/100;
+                balance += Math.round(betAmount * cashoutMultiplier * 100)/100;
                 updateBalance();
                 updateServerBalance();
-                showLoading();
                 document.getElementById('multiplier').classList.remove('crashed');
                 document.getElementById('multiplier').style.color = '#333';
+                cashedOut = true;
+            } else {
+                console.log("You're not allowed to cash out NOW!")
             }
         }
 
@@ -793,7 +797,6 @@
         }
 
         function updateServerBalance() {
-            change = Math.round(change * 100)/100;
             fetch(`${scriptUrl}?action=updateBalance&username=${username}&changeAmount=${change}&c=0`)
                 .then(response => response.json())
                 .then(data => {
@@ -834,19 +837,21 @@
         }
 
         async function UpdateBalanceWhenNotPlaying() {
-            if (username && !gameRunning) { // 如果用戶已登入
+            if (username && !gameRunning && !updating) { // 如果用戶已登入且遊戲未進行
+                console.log("Waiting for 10 seconds before updating balance...");
+                await new Promise(resolve => setTimeout(resolve, 10000)); // 等待 10 秒鐘
                 balance = await getBalance(username);
                 balance = Math.round(balance * 100) / 100;
                 document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
-                console.log("This function runs every 10 seconds");
+                console.log("Balance updated after 10 seconds");
+            } else {
+                console.log("Game Playing or not logged in");
             }
-            else {
-                console.log("Game Playing or not logged in")
-            }
-            setTimeout(UpdateBalanceWhenNotPlaying, 10000);
+            setTimeout(UpdateBalanceWhenNotPlaying, 10000); // 每 10 秒鐘檢查一次條件
         }
 
-        UpdateBalanceWhenNotPlaying();
+        UpdateBalanceWhenNotPlaying(); // 啟動函數
+
 
         function detectDevToolsAndRespond() {
         let devtools = false;
@@ -889,7 +894,7 @@
         }
 
         // 使用方法
-        detectDevToolsAndRespond();
+        // detectDevToolsAndRespond();
     </script>
 </body>
 </html>
