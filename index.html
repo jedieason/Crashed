@@ -845,7 +845,7 @@
         }
 
         async function UpdateBalanceWhenNotPlaying() {
-            if (username && !gameRunning) { // 如果用戶已登入
+            if (username && !gameRunning && balance <= 0) { // 如果用戶已登入
                 balance = await getBalance(username);
                 balance = Math.round(balance * 100) / 100;
                 document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
