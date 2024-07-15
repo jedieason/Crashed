@@ -462,7 +462,7 @@
          let pathData = "M0,200";
          let areaData = "M0,200";
          let cashedOut = false;
-         let cashoutMultiplier = 0;
+         let cashoutMultiplier = 1;
          let username;
          let change = 0;
          const canvas = document.getElementById('chartCanvas');
@@ -540,6 +540,7 @@
 
 
          function placeBet() {
+             cashOutMultiplier = 1;
              if (gameRunning && !cashedOut) return; // Prevent placing a new bet while the game is running
              if (interval) {
                  clearInterval(interval);
@@ -808,9 +809,7 @@
 
         function updateServerBalance() {
             change = Math.round(change * 100)/100;
-            cashoutMultiplier = Math.round(cashoutMultiplier * 100)/100;
-            console.log(`${scriptUrl}?action=updateBalance&username=${username}&changeAmount=${change}&c=${cashoutMultiplier}`);
-            fetch(`${scriptUrl}?action=updateBalance&username=${username}&changeAmount=${change}&c=${cashoutMultiplier}`)
+            fetch(`${scriptUrl}?action=updateBalance&username=${username}&changeAmount=${change}&c=0`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success) {
@@ -846,7 +845,7 @@
         }
 
         async function UpdateBalanceWhenNotPlaying() {
-            if (username && !gameRunning && balance == 0) { // 如果用戶已登入
+            if (username && !gameRunning) { // 如果用戶已登入
                 balance = await getBalance(username);
                 balance = Math.round(balance * 100) / 100;
                 document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
@@ -901,7 +900,7 @@
         }
 
         // 使用方法
-        // detectDevToolsAndRespond();
+        detectDevToolsAndRespond();
     </script>
 </body>
 </html>
