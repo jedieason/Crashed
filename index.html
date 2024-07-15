@@ -453,7 +453,7 @@
         </div>
     </div>
     <script>
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxPoiqIEsIRR4rnsrjKzULK3Pm7GevufMIlqQ2rsuORIFBNx7KK_gAWIWELIUL3QolK/exec'; // 替換為你的Google Apps Script部署URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbz2FkuOnsDZb3OzY-lsHiO5z1djSmjtjn1Hfgzez7ijpYjkVbX3xPsUWkWKX82Pa1o/exec'; // 替換為你的Google Apps Script部署URL
          let balance = 0;
          let betAmount = 0;
          let multiplier = 1.00;
@@ -462,8 +462,10 @@
          let pathData = "M0,200";
          let areaData = "M0,200";
          let cashedOut = false;
-         let cashoutMultiplier = 0;
+         let cashoutMultiplier = 1;
          let username;
+         let change = 0;
+         let updating = false;
          const canvas = document.getElementById('chartCanvas');
          const canvasWidth = canvas.width;
          const ctx = canvas.getContext('2d');
@@ -478,7 +480,6 @@
              if (username) { // 如果用戶已登入
                  balance = Math.round(balance * 100) / 100;
                  document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
-                 updateServerBalance();
              } else {
                  document.getElementById('balance').textContent = '請先註冊或登入';
              }
@@ -540,7 +541,8 @@
 
 
          function placeBet() {
-             if (gameRunning && !cashedOut) return; // Prevent placing a new bet while the game is running
+             cashOutMultiplier = 1;
+             if ((gameRunning && !cashedOut) || updating) return; // Prevent placing a new bet while the game is running
              if (interval) {
                  clearInterval(interval);
              }
@@ -560,6 +562,7 @@
                  document.getElementById('multiplier').style.color = '#333';
              }
              balance -= betAmount;
+             change = -betAmount;
              gameRunning = true;
              cashedOut = false;
              startGame();
@@ -597,6 +600,7 @@
                  document.getElementById('multiplier').style.color = 'red';
                  gameRunning = false;
                  betAmount = 0; // Clear the bet amount since it crashed
+                 change = 0;
              } else {
                  multiplier += 0.01; // 快速乘數增量
                  updateMultiplier();
@@ -623,20 +627,21 @@
 
 
          function cashOut() {
-             if (gameRunning && !cashedOut) {
-                 cashoutMultiplier = multiplier;
-                 showCashoutInfo();
-                 balance += betAmount * multiplier;
-                 gameRunning = false;
-                 cashedOut = true;
-                 updateBalance();
-                 updateServerBalance();
-                 document.getElementById('multiplier').classList.remove('crashed');
-                 document.getElementById('multiplier').style.color = '#333';
-             }
-         }
-
-
+            if (gameRunning && !cashedOut) {
+                updating = true;
+                cashoutMultiplier = multiplier;
+                showCashoutInfo();
+                balance += betAmount * cashoutMultiplier;
+                change = betAmount * cashoutMultiplier;
+                gameRunning = false;
+                cashedOut = true;
+                updateBalance();
+                updateServerBalance();
+                showLoading();
+                document.getElementById('multiplier').classList.remove('crashed');
+                document.getElementById('multiplier').style.color = '#333';
+            }
+        }
 
          function setBetPercentage(percentage) {
              if (gameRunning && !cashedOut) return;
@@ -804,10 +809,14 @@
         }
 
         function updateServerBalance() {
-            fetch(`${scriptUrl}?action=updateBalance&username=${username}&balance=${balance}`)
+            change = Math.round(change * 100)/100;
+            fetch(`${scriptUrl}?action=updateBalance&username=${username}&changeAmount=${change}&c=0`)
                 .then(response => response.json())
                 .then(data => {
-                    if (!data.success) {
+                    if (data.success) {
+                        hideLoading();
+                    } else {
+                        hideLoading();
                         showMessage('更新餘額失敗', 'alert-info');
                     }
                 });
@@ -830,6 +839,7 @@
             setTimeout(() => {
                 loadingMessage.style.display = 'none';
             }, 500);
+            updating = false;
         }
 
         async function getBalance(userName) {
@@ -840,7 +850,7 @@
         }
 
         async function UpdateBalanceWhenNotPlaying() {
-            if (username && !gameRunning && balance == 0) { // 如果用戶已登入
+            if (username && !gameRunning) { // 如果用戶已登入
                 balance = await getBalance(username);
                 balance = Math.round(balance * 100) / 100;
                 document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
