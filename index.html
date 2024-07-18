@@ -476,6 +476,41 @@
          canvas.height = canvas.offsetHeight * scale;
          ctx.scale(scale, scale);
 
+         document.addEventListener("DOMContentLoaded", () => {
+            // 檢查 localStorage 中是否有儲存的使用者資訊
+            const savedUsername = localStorage.getItem('username');
+            const savedPassword = localStorage.getItem('password');
+
+            if (savedUsername && savedPassword) {
+                // 自動登入
+                showLoading();
+                fetch(`${scriptUrl}?action=queryBalance&username=${savedUsername}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            hideLoading();
+                            balance = data.balance;
+                            user = savedUsername;
+                            username = savedUsername;  // 這裡賦值
+                            const userButton = document.getElementById('userButton');
+                            const dividers = document.querySelectorAll('.divider');
+                            userButton.style.display = 'block';
+                            userButton.textContent = `${username}`;
+                            document.querySelector('.login-button').style.display = 'none';
+                            document.querySelector('.register-button').style.display = 'none';
+                            dividers.forEach(divider => {
+                                divider.style.display = 'block';
+                            });
+                            updateBalance();
+                            showMessage('自動登入成功！', 'cashout-info');
+                        } else {
+                            hideLoading();
+                            showMessage('自動登入失敗！', 'alert-info');
+                        }
+                    });
+            }
+        });
+
          function updateBalance() {
              if (username) { // 如果用戶已登入
                  balance = Math.round(balance * 100) / 100;
@@ -755,6 +790,8 @@
                         hideLoading();
                         showMessage('註冊成功！', 'cashout-info');
                         username = registerUsername;  // 這裡賦值
+                        localStorage.setItem('username', loginUsername);
+                        localStorage.setItem('password', loginPassword);
                         const userButton = document.getElementById('userButton');
                         userButton.style.display = 'block';
                         userButton.textContent = `${username}`;
@@ -781,6 +818,8 @@
                         hideLoading()
                         balance = data.balance;
                         username = loginUsername;  // 這裡賦值
+                        localStorage.setItem('username', loginUsername);
+                        localStorage.setItem('password', loginPassword);
                         const userButton = document.getElementById('userButton');
                         userButton.style.display = 'block';
                         userButton.textContent = `${username}`;
