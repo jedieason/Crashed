@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系統維護中</title>
+    <title>Stock Market</title>
     <style>
         @keyframes fadeInZoom {
             0% {
@@ -459,6 +459,7 @@
          let multiplier = 1.00;
          let gameRunning = false;
          let interval;
+         let updateInterval;
          let pathData = "M0,200";
          let areaData = "M0,200";
          let cashedOut = true;
@@ -480,7 +481,6 @@
             // 檢查 localStorage 中是否有儲存的使用者資訊
             const savedUsername = localStorage.getItem('username');
             const savedPassword = localStorage.getItem('password');
-
             if (savedUsername && savedPassword) {
                 // 自動登入
                 showLoading();
@@ -602,7 +602,11 @@
          function startGame() {
              if (interval) {
                  clearInterval(interval);
-             }
+            }
+             if (updateInterval) {
+                console.log('interval cleared');
+                clearInterval(updateInterval);
+            }
              multiplier = 1.00;
              pathData = "M0,200";
              areaData = "M0,200";
@@ -871,6 +875,7 @@
                 loadingMessage.style.display = 'none';
             }, 500);
             updating = false;
+            startUpdatingBalance();
         }
 
         async function getBalance(userName) {
@@ -880,27 +885,22 @@
             return result.success ? result.balance : 0;
         }
 
-        async function UpdateBalanceWhenNotPlaying() {
-            if (username && !updating && cashedOut) { // 如果用戶已登入且遊戲未進行
-                console.log("Waiting for 10 seconds before updating balance...");
-                await new Promise(resolve => setTimeout(resolve, 10000)); // 等待 10 秒鐘
-                const balanceCache = await getBalance(username);
-                if (!cashedOut || updating) {
-                    console.log("Game Playing or not logged in in loop");
-                    await new Promise(resolve => setTimeout(resolve, 10000));
-                } else {
-                    balance = Math.round(balanceCache * 100) / 100;
-                    document.getElementById('balance').textContent = balance.toFixed(2) + " tstNTD";
-                    console.log("Balance updated after 10 seconds to " + balance);
+        function startUpdatingBalance() {
+            console.log('interval starting');
+            updateInterval = setInterval(async () => {
+                if (username && (!updating || cashedOut)) {
+                    const balanceCache = await getBalance(username);
+                    if (updating || !cashedOut){
+                        console.log('interval cleared');
+                        clearInterval(updateInterval);
+                    } else {
+                        balance = Math.round(balanceCache * 100) / 100;
+                        document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
+                        console.log("Auto balance updated to " + balance);
+                    }
                 }
-            } else {
-                console.log("Game Playing or not logged in");
-            }
-            setTimeout(UpdateBalanceWhenNotPlaying, 10000); // 每 10 秒鐘檢查一次條件
+            }, 10000); // 每 10 秒更新一次
         }
-
-        UpdateBalanceWhenNotPlaying(); // 啟動函數
-
 
         function detectDevToolsAndRespond() {
         let devtools = false;
@@ -943,7 +943,7 @@
         }
 
         // 使用方法
-        // detectDevToolsAndRespond();
+        detectDevToolsAndRespond();
     </script>
 </body>
 </html>
