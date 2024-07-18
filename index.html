@@ -461,7 +461,7 @@
          let interval;
          let pathData = "M0,200";
          let areaData = "M0,200";
-         let cashedOut = false;
+         let cashedOut = true;
          let cashoutMultiplier = 1;
          let username;
          let change = 0;
@@ -572,7 +572,7 @@
 
          function placeBet() {
              cashOutMultiplier = 1;
-             if ((gameRunning && !cashedOut) || updating) return; // Prevent placing a new bet while the game is running
+             if (!cashedOut || updating) return; // Prevent placing a new bet while the game is running
              if (interval) {
                  clearInterval(interval);
              }
@@ -627,12 +627,13 @@
                  const crashedMultiplier = multiplier + 0.01;
                  document.getElementById('multiplier').textContent = 'Crashed at ' + crashedMultiplier.toFixed(2) + 'x';
                  document.getElementById('multiplier').style.color = 'red';
-                 if (gameRunning) {
+                 if (!cashedOut && gameRunning) {
                     showLoading();
                     updateBalance();
                     updateServerBalance();
                  }
                  gameRunning = false;
+                 cashedOut = true;
                  betAmount = 0; // Clear the bet amount since it crashed
              } else {
                  multiplier += 0.01; // 快速乘數增量
@@ -880,11 +881,11 @@
         }
 
         async function UpdateBalanceWhenNotPlaying() {
-            if (username && !gameRunning && !updating) { // 如果用戶已登入且遊戲未進行
+            if (username && !updating && cashedOut) { // 如果用戶已登入且遊戲未進行
                 console.log("Waiting for 10 seconds before updating balance...");
                 await new Promise(resolve => setTimeout(resolve, 10000)); // 等待 10 秒鐘
                 const balanceCache = await getBalance(username);
-                if (gameRunning || updating) {
+                if (!cashedOut || updating) {
                     console.log("Game Playing or not logged in in loop");
                     await new Promise(resolve => setTimeout(resolve, 10000));
                 } else {
@@ -943,7 +944,7 @@
         }
 
         // 使用方法
-        detectDevToolsAndRespond();
+        // detectDevToolsAndRespond();
     </script>
 </body>
 </html>
