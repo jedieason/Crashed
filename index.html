@@ -515,6 +515,7 @@
              if (username) { // 如果用戶已登入
                  balance = Math.round(balance * 100) / 100;
                  document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
+                 console.log('balance updated to ' + balance);
              } else {
                  document.getElementById('balance').textContent = '請先註冊或登入';
              }
@@ -576,7 +577,6 @@
                  clearInterval(interval);
              }
              document.getElementById('multiplier').classList.remove('crashed');
-
              betAmount = parseFloat(document.getElementById('betAmount').value);
              if (isNaN(betAmount) || betAmount == 0) {
                  showAlertInfo('請輸入下注金額');
@@ -590,10 +590,10 @@
              } else {
                  document.getElementById('multiplier').style.color = '#333';
              }
+             gameRunning = true;
              change = -betAmount;
              balance += change;
              updateBalance();
-             gameRunning = true;
              cashedOut = false;
              startGame();
          }
@@ -624,9 +624,12 @@
              if (Math.random() < getProbability(multiplier)) {
                  clearInterval(interval);
                  document.getElementById('multiplier').classList.add('crashed');
-                 document.getElementById('multiplier').textContent = 'Crashed at ' + multiplier.toFixed(2) + 'x';
+                 const crashedMultiplier = multiplier + 0.01;
+                 document.getElementById('multiplier').textContent = 'Crashed at ' + crashedMultiplier.toFixed(2) + 'x';
                  document.getElementById('multiplier').style.color = 'red';
                  if (gameRunning) {
+                    showLoading();
+                    updateBalance();
                     updateServerBalance();
                  }
                  gameRunning = false;
@@ -840,6 +843,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        console.log('server balance updated');
                         hideLoading();
                     } else {
                         hideLoading();
@@ -879,10 +883,16 @@
             if (username && !gameRunning && !updating) { // 如果用戶已登入且遊戲未進行
                 console.log("Waiting for 10 seconds before updating balance...");
                 await new Promise(resolve => setTimeout(resolve, 10000)); // 等待 10 秒鐘
-                balance = await getBalance(username);
-                balance = Math.round(balance * 100) / 100;
-                document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
-                console.log("Balance updated after 10 seconds");
+                const balanceCache = await getBalance(username);
+                if (gameRunning || updating) {
+                    console.log("Game Playing or not logged in in loop");
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+                } else {
+                    balance = balanceCache;
+                    balance = Math.round(balance * 100) / 100;
+                    document.getElementById('balance').textContent = balance.toFixed(2) + " NTD";
+                    console.log("Balance updated after 10 seconds to " + balance);
+                }
             } else {
                 console.log("Game Playing or not logged in");
             }
