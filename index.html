@@ -621,11 +621,11 @@
 
          function getInterval(multiplier) {
 
-             if (multiplier <= 50) {
-                 return 100 - multiplier * multiplier / 250 * 99;
+             if (multiplier <= 20) {
+                 return 124 - multiplier * multiplier * multiplier / 800 * 120;
              }
 
-             else { return 1}
+             else { return 4}
          }
 
          function gameTick() {
@@ -947,7 +947,7 @@
         }
 
         // 使用方法
-        // detectDevToolsAndRespond();
+        detectDevToolsAndRespond();
     </script>
 </body>
 </html>
