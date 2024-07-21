@@ -578,7 +578,7 @@
 
          function placeBet() {
              cashOutMultiplier = 1;
-             if (!cashedOut || updating) return; // Prevent placing a new bet while the game is running
+             if (!cashedOut || updating || balance < 0) return; // Prevent placing a new bet while the game is running
              if (interval) {
                  clearInterval(interval);
              }
@@ -855,6 +855,9 @@
                 .then(data => {
                     if (data.success) {
                         console.log('server balance updated');
+                        balance = data.balance;
+                        console.log(data.balance);
+                        console.log(balance);
                         hideLoading();
                     } else {
                         hideLoading();
