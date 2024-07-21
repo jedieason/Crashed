@@ -386,6 +386,8 @@
 <body>
     <div class="header"><img src="logo.svg" alt="𝔑𝔗𝔘𝔐𝔈𝔇 ℭ𝔄𝔐𝔓"></div>
     <div class="button-row">
+        <button class="intro-button" onclick=" redirect()">股票</button>
+        <div class="divider"></div>
         <button class="intro-button" onclick="toggleIntro()">介紹</button>
         <div class="divider"></div>
         <button class="register-button" onclick="toggleRegister()">註冊</button>
@@ -859,6 +861,10 @@
                         showMessage('更新餘額失敗', 'alert-info');
                     }
                 });
+        }
+
+        function redirect(){
+            window.location.href = 'https://jedieason.github.io/Trading-interface/';
         }
 
          updateMultiplier();
